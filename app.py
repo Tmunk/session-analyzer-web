@@ -82,9 +82,13 @@ else:
     for i, client in enumerate(st.session_state.clients):
         with st.container(border=True):
             cols = st.columns([6, 1])
-            file_summary = ", ".join(
-                f"{k}: {len(v) if isinstance(v, list) else 1}" for k, v in client["files"].items() if v
-            ) or "no files selected"
+            file_labels = {"sessions": "Sessions", "hosts": "Hosts", "students": "Students", "kiosk": "Kiosk"}
+            file_summary = " &middot; ".join(
+                f"{file_labels[k]}: {len(v) if isinstance(v, list) else 1} file"
+                + ("s" if (len(v) if isinstance(v, list) else 1) != 1 else "")
+                for k, v in client["files"].items()
+                if v
+            ) or "No files selected"
             cols[0].markdown(
                 f'<div class="nocturne-client-card">'
                 f'<span class="nocturne-card-kicker">{client["program"]}</span>'

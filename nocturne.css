@@ -158,7 +158,7 @@ button[kind="secondary"]:hover {
 
 /* ── monthly bar chart ── */
 .nocturne-chart { display: flex; align-items: flex-end; gap: var(--space-3); height: 150px; padding-top: 14px; }
-.nocturne-chart-bar { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
+.nocturne-chart-bar { flex: 0 0 auto; width: 46px; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
 .nocturne-chart-bar .value { font-size: 11px; color: color-mix(in srgb, var(--color-text) 55%, transparent); }
 .nocturne-chart-bar .fill {
   width: 100%; max-width: 34px; border-radius: 5px 5px 2px 2px;
