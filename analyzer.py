@@ -210,18 +210,80 @@ def process_client_files(files: dict, date_range) -> dict:
     return all_data
 
 
+def annual_summary(client_data: dict) -> dict:
+    """Roll monthly metrics up into one aggregate per year.
+
+    Used by both generate_report() (the plain-text export) and the UI's
+    Annual view, so the two never drift out of sync.
+    """
+    years: dict = {}
+    for period in sorted(client_data.keys()):
+        years.setdefault(period.year, []).append(period)
+
+    summary = {}
+    for year, periods in years.items():
+        year_hosts = set()
+        year_students = set()
+        totals = {
+            "total_sessions": 0,
+            "online_sessions": 0,
+            "inperson_sessions": 0,
+            "sessions_with_hosts": 0,
+            "approved_hosts": 0,
+            "approved_students": 0,
+            "kiosk_sessions": 0,
+            "kiosk_hosts": set(),
+            "kiosk_students": set(),
+        }
+        for period in periods:
+            data = client_data[period]
+            year_hosts.update(data["hosts"])
+            year_students.update(data["students"])
+            for key in (
+                "total_sessions",
+                "online_sessions",
+                "inperson_sessions",
+                "sessions_with_hosts",
+                "approved_hosts",
+                "approved_students",
+                "kiosk_sessions",
+            ):
+                totals[key] += data[key]
+            totals["kiosk_hosts"].update(data["kiosk_hosts"])
+            totals["kiosk_students"].update(data["kiosk_students"])
+
+        summary[year] = {
+            "months": periods,
+            "unique_hosts": len(year_hosts),
+            "unique_students": len(year_students),
+            "total_sessions": totals["total_sessions"],
+            "online_sessions": totals["online_sessions"],
+            "inperson_sessions": totals["inperson_sessions"],
+            "sessions_with_hosts": totals["sessions_with_hosts"],
+            "avg_sessions_per_host": (
+                round(totals["sessions_with_hosts"] / len(year_hosts)) if year_hosts else 0
+            ),
+            "avg_sessions_per_student": (
+                round(totals["total_sessions"] / len(year_students)) if year_students else 0
+            ),
+            "approved_hosts": totals["approved_hosts"],
+            "approved_students": totals["approved_students"],
+            "kiosk_sessions": totals["kiosk_sessions"],
+            "kiosk_hosts": len(totals["kiosk_hosts"]),
+            "kiosk_students": len(totals["kiosk_students"]),
+        }
+    return summary
+
+
 def generate_report(client_name: str, client_data: dict) -> str:
     report = [f"Client: {client_name}\n"]
     sorted_months = sorted(client_data.keys())
     years: dict = {}
     for period in sorted_months:
         years.setdefault(period.year, []).append(period)
+    annual = annual_summary(client_data)
 
     for year in sorted(years.keys()):
-        year_hosts = set()
-        year_students = set()
-        year_sessions_with_hosts = 0
-
         for period in years[year]:
             data = client_data[period]
             report.append(f"\n--- {period.strftime('%B %Y')} ---")
@@ -238,10 +300,6 @@ def generate_report(client_name: str, client_data: dict) -> str:
             report.append(f"Kiosk Hosts: {data['kiosk_host_count']}")
             report.append(f"Kiosk Students: {data['kiosk_student_count']}")
 
-            year_hosts.update(data["hosts"])
-            year_students.update(data["students"])
-            year_sessions_with_hosts += data["sessions_with_hosts"]
-
             report.append("\n--- Formatted for data entry ---")
             report.append(f"{data['total_sessions']}")
             report.append(f"{data['online_sessions']}")
@@ -253,12 +311,13 @@ def generate_report(client_name: str, client_data: dict) -> str:
             report.append(f"{data['approved_hosts']}")
             report.append(f"{data['approved_students']}")
 
+        year_summary = annual[year]
         report.append(f"\n--- Annual Summary {year} ---")
-        report.append(f"Unique Hosts: {len(year_hosts)}")
-        report.append(f"Unique Students: {len(year_students)}")
-        report.append(f"Total Valid Sessions: {year_sessions_with_hosts}")
-        if year_hosts:
-            report.append(f"Avg Annual Sessions/Host: {round(year_sessions_with_hosts / len(year_hosts))}")
+        report.append(f"Unique Hosts: {year_summary['unique_hosts']}")
+        report.append(f"Unique Students: {year_summary['unique_students']}")
+        report.append(f"Total Valid Sessions: {year_summary['sessions_with_hosts']}")
+        if year_summary["unique_hosts"]:
+            report.append(f"Avg Annual Sessions/Host: {year_summary['avg_sessions_per_host']}")
         else:
             report.append("Avg Annual Sessions/Host: N/A")
 
