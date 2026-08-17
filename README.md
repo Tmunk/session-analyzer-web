@@ -2,7 +2,7 @@
 
 A browser-based tool for turning raw tutoring-session export CSVs (sessions, kiosk check-ins, host approvals, student signups) into monthly and annual per-client reports: total sessions, online vs. in-person split, unique hosts/students, average sessions per host/student, and kiosk-specific breakdowns.
 
-Try it live: *(link added once deployed)* — click "Add client," upload the files from `sample_data/`, and click "Run Analysis."
+Try it live: **[session-analyzer-web.vercel.app](https://session-analyzer-web.vercel.app)** — click "Add client," upload the files from `sample_data/`, and click "Run Analysis."
 
 ## Why this exists
 
