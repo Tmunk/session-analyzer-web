@@ -131,7 +131,6 @@ button[kind="secondary"]:hover {
 
 /* ── tabs as a segmented control ── */
 [data-baseweb="tab-list"] {
-  gap: 0 !important;
   border-bottom: 1px solid var(--color-divider) !important;
 }
 [data-baseweb="tab"] {

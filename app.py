@@ -54,7 +54,7 @@ with st.expander("Add client", expanded=not st.session_state.clients):
         students_file = st.file_uploader("Students file (optional)", type="csv")
         kiosk_file = st.file_uploader("Kiosk file (optional)", type="csv")
 
-        submitted = st.form_submit_button("Add client & analyze", type="primary")
+        submitted = st.form_submit_button("Add client", type="primary")
         if submitted:
             if not name.strip():
                 st.error("Enter a client name to continue.")
@@ -86,13 +86,11 @@ else:
                 f"{k}: {len(v) if isinstance(v, list) else 1}" for k, v in client["files"].items() if v
             ) or "no files selected"
             cols[0].markdown(
-                f"""
-                <div class="nocturne-client-card">
-                  <span class="nocturne-card-kicker">{client['program']}</span>
-                  <span class="nocturne-card-title">{client['name']}</span>
-                  <p class="nocturne-card-body">{file_summary}</p>
-                </div>
-                """,
+                f'<div class="nocturne-client-card">'
+                f'<span class="nocturne-card-kicker">{client["program"]}</span>'
+                f'<span class="nocturne-card-title">{client["name"]}</span>'
+                f'<p class="nocturne-card-body">{file_summary}</p>'
+                f'</div>',
                 unsafe_allow_html=True,
             )
             if cols[1].button("Remove", key=f"remove_{i}"):
@@ -142,16 +140,18 @@ def render_monthly_tab(client_data: dict) -> None:
     periods = sorted(client_data.keys())
     max_total = max(client_data[p]["total_sessions"] for p in periods) or 1
 
-    bars = "".join(
-        f"""
-        <div class="nocturne-chart-bar" title="{client_data[p]['total_sessions']} sessions">
-          <span class="value">{client_data[p]['total_sessions']}</span>
-          <div class="fill" style="height:{max(6, round(client_data[p]['total_sessions'] / max_total * 100))}%;"></div>
-          <span class="label">{p.strftime('%b')}</span>
-        </div>
-        """
-        for p in periods
-    )
+    def bar_html(period) -> str:
+        total = client_data[period]["total_sessions"]
+        pct = max(6, round(total / max_total * 100))
+        return (
+            f'<div class="nocturne-chart-bar" title="{total} sessions">'
+            f'<span class="value">{total}</span>'
+            f'<div class="fill" style="height:{pct}%;"></div>'
+            f'<span class="label">{period.strftime("%b")}</span>'
+            f'</div>'
+        )
+
+    bars = "".join(bar_html(p) for p in periods)
     with st.container(border=True):
         st.markdown('<span class="nocturne-card-kicker">Sessions per month</span>', unsafe_allow_html=True)
         st.markdown(f'<div class="nocturne-chart">{bars}</div>', unsafe_allow_html=True)
@@ -185,43 +185,31 @@ def render_annual_tab(client_data: dict) -> None:
         st.info("No sessions analyzed yet for this date range.")
         return
 
+    def stat_card(kicker: str, value, body: str) -> str:
+        return (
+            f'<div class="nocturne-client-card" '
+            f'style="background:var(--color-surface);padding:8.4px;border-radius:8px;">'
+            f'<span class="nocturne-card-kicker">{kicker}</span>'
+            f'<div class="nocturne-stat-value">{value}</div>'
+            f'<p class="nocturne-card-body" style="opacity:0.6;">{body}</p>'
+            f'</div>'
+        )
+
     summary = analyzer.annual_summary(client_data)
     for year in sorted(summary.keys()):
         y = summary[year]
         online_pct = round(y["online_sessions"] / y["total_sessions"] * 100) if y["total_sessions"] else 0
-        st.markdown(f"#### {year}")
-        st.markdown(
-            f"""
-            <div class="nocturne-stat-grid">
-              <div class="nocturne-client-card" style="background:var(--color-surface);padding:8.4px;border-radius:8px;">
-                <span class="nocturne-card-kicker">Total sessions</span>
-                <div class="nocturne-stat-value">{y['total_sessions']}</div>
-                <p class="nocturne-card-body" style="opacity:0.6;">Year to date &middot; {len(y['months'])} months</p>
-              </div>
-              <div class="nocturne-client-card" style="background:var(--color-surface);padding:8.4px;border-radius:8px;">
-                <span class="nocturne-card-kicker">Online / in-person</span>
-                <div class="nocturne-stat-value">{online_pct}%</div>
-                <p class="nocturne-card-body" style="opacity:0.6;">{y['online_sessions']} online &middot; {y['inperson_sessions']} in-person</p>
-              </div>
-              <div class="nocturne-client-card" style="background:var(--color-surface);padding:8.4px;border-radius:8px;">
-                <span class="nocturne-card-kicker">Unique hosts</span>
-                <div class="nocturne-stat-value">{y['unique_hosts']}</div>
-                <p class="nocturne-card-body" style="opacity:0.6;">{y['avg_sessions_per_host']} sessions / host</p>
-              </div>
-              <div class="nocturne-client-card" style="background:var(--color-surface);padding:8.4px;border-radius:8px;">
-                <span class="nocturne-card-kicker">Unique students</span>
-                <div class="nocturne-stat-value">{y['unique_students']}</div>
-                <p class="nocturne-card-body" style="opacity:0.6;">{y['avg_sessions_per_student']} sessions / student</p>
-              </div>
-              <div class="nocturne-client-card" style="background:var(--color-surface);padding:8.4px;border-radius:8px;">
-                <span class="nocturne-card-kicker">Kiosk activity</span>
-                <div class="nocturne-stat-value">{y['kiosk_sessions']}</div>
-                <p class="nocturne-card-body" style="opacity:0.6;">{y['kiosk_hosts']} hosts &middot; {y['kiosk_students']} students</p>
-              </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
+        cards = "".join(
+            [
+                stat_card("Total sessions", y["total_sessions"], f"Year to date &middot; {len(y['months'])} months"),
+                stat_card("Online / in-person", f"{online_pct}%", f"{y['online_sessions']} online &middot; {y['inperson_sessions']} in-person"),
+                stat_card("Unique hosts", y["unique_hosts"], f"{y['avg_sessions_per_host']} sessions / host"),
+                stat_card("Unique students", y["unique_students"], f"{y['avg_sessions_per_student']} sessions / student"),
+                stat_card("Kiosk activity", y["kiosk_sessions"], f"{y['kiosk_hosts']} hosts &middot; {y['kiosk_students']} students"),
+            ]
         )
+        st.markdown(f"#### {year}")
+        st.markdown(f'<div class="nocturne-stat-grid">{cards}</div>', unsafe_allow_html=True)
         st.caption("Annual figures are year-to-date across the months analyzed above; unique host/student counts are deduplicated across the period.")
 
 
