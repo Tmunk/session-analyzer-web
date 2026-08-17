@@ -11,9 +11,10 @@
     <script type="module">
       import { mount } from "https://cdn.jsdelivr.net/npm/@stlite/browser@1.8.1/build/stlite.js";
 
-      const [appPy, analyzerPy] = await Promise.all([
+      const [appPy, analyzerPy, nocturneCss] = await Promise.all([
         fetch("app.py").then((r) => r.text()),
         fetch("analyzer.py").then((r) => r.text()),
+        fetch("nocturne.css").then((r) => r.text()),
       ]);
 
       mount(
@@ -23,6 +24,7 @@
           files: {
             "app.py": appPy,
             "analyzer.py": analyzerPy,
+            "nocturne.css": nocturneCss,
           },
         },
         document.getElementById("root"),
