@@ -23,8 +23,12 @@ The fix here is **[stlite](https://github.com/whitphx/stlite)** — a WebAssembl
 1. **Add one or more clients**, each with its own set of files: one or more session export CSVs (multiple files auto-combine, handling minor column-count mismatches between exports), plus optional hosts/students/kiosk CSVs.
 2. **Optionally set a date range** to scope the analysis to a specific window; otherwise all dates are included.
 3. **Run analysis** — for each client, session rows are grouped by month, host names are cleaned (stripping parenthetical tags like `(Volunteer)`), and students/hosts are deduplicated by ID where available (falling back to name matching if not).
-4. **View a per-client report** (tabbed) with monthly breakdowns plus an annual summary, and a "formatted for data entry" block — a plain list of the same numbers in report order, meant for quickly pasting into an external tracking sheet without reformatting.
-5. **Export all reports** as a single `.txt` file.
+4. **View a per-client report**, tabbed three ways: **Monthly** (a bar chart of sessions per month plus a full data table), **Annual** (stat cards — total sessions, online/in-person split, unique hosts/students with per-host/per-student averages, kiosk activity), and **Data-entry export** (the plain-text block used to paste straight into an external tracking sheet, with a built-in copy button).
+5. **Export** a single client's report or all reports combined as `.txt` files.
+
+## Design
+
+The visual design (dark theme, purple accent, card layout) is adapted from a design handoff built around a "Nocturne" design system — same color/type/spacing tokens, reskinned onto Streamlit's actual component DOM (`nocturne.css`) rather than the handoff's original custom HTML/CSS mockup. The handoff's dashboard-with-sidebar-nav-and-modal layout wasn't carried over as-is — Streamlit's reactive single-page model doesn't support true modals or custom page routing without fighting the framework, so this is a close reskin of the existing app structure, not a pixel rebuild. The Monthly/Annual/Export tab structure, stat cards, and bar chart *are* real, driven entirely by `analyzer.py` output — none of it is mock data.
 
 ## Architecture differences from the desktop original (documented honestly, not hidden)
 
