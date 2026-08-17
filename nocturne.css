@@ -48,7 +48,7 @@
   color: var(--color-text);
 }
 [data-testid="stHeader"] { background: transparent; }
-.stApp, .stApp * { font-family: var(--font-body); }
+.stApp { font-family: var(--font-body); }
 h1, h2, h3, h4, h5, h6,
 [data-testid="stMarkdownContainer"] h1, [data-testid="stMarkdownContainer"] h2, [data-testid="stMarkdownContainer"] h3 {
   font-family: var(--font-heading) !important;
@@ -80,7 +80,7 @@ h1, h2, h3, h4, h5, h6,
 }
 
 /* ── buttons: accent outline primary, never filled ── */
-button[kind="primary"], button[kind="secondaryFormSubmit"] {
+button[kind="primary"], button[kind="primaryFormSubmit"] {
   background: transparent !important;
   color: var(--color-accent) !important;
   border: 1px solid var(--color-accent) !important;
