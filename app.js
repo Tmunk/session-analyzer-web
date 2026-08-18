@@ -1,6 +1,4 @@
-import { loadPyodide } from "https://cdn.jsdelivr.net/npm/pyodide@314.0.5/pyodide.mjs";
-
-const MONTH_ABBR_TO_FULL = {}; // unused placeholder kept for parity with the handoff naming; real labels come from Python
+import { loadPyodide } from "https://cdn.jsdelivr.net/pyodide/v314.0.5/full/pyodide.mjs";
 
 const state = {
   clients: [], // {id, name, program, status, monthly, annual, reportText, error}
@@ -18,7 +16,7 @@ async function boot() {
   const statusEl = document.getElementById("loading-status");
   statusEl.textContent = "Loading Python runtime…";
   const pyodide = await loadPyodide({
-    indexURL: "https://cdn.jsdelivr.net/npm/pyodide@314.0.5/",
+    indexURL: "https://cdn.jsdelivr.net/pyodide/v314.0.5/full/",
   });
 
   statusEl.textContent = "Installing pandas & chardet…";

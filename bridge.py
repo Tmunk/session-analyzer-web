@@ -48,9 +48,9 @@ def run_client_analysis(
 ):
     files = {
         "sessions": [BytesFile(b) for b in sessions_bytes_list] if sessions_bytes_list else None,
-        "hosts": BytesFile(hosts_bytes) if hosts_bytes is not None else None,
-        "students": BytesFile(students_bytes) if students_bytes is not None else None,
-        "kiosk": BytesFile(kiosk_bytes) if kiosk_bytes is not None else None,
+        "hosts": BytesFile(hosts_bytes) if hosts_bytes else None,
+        "students": BytesFile(students_bytes) if students_bytes else None,
+        "kiosk": BytesFile(kiosk_bytes) if kiosk_bytes else None,
     }
     date_range = (_parse_date(start_date), _parse_date(end_date))
 
